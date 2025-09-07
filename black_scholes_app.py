@@ -1,4 +1,9 @@
+"""Streamlit app for Black-Scholes option pricing."""
+
+import altair as alt
+import pandas as pd
 import streamlit as st
+
 from black_scholes import black_scholes_price
 
 
@@ -16,6 +21,21 @@ def main() -> None:
         try:
             price = black_scholes_price(s, k, t, r, sigma, option_type)
             st.write(f"{option_type.capitalize()} option price: {price:.4f}")
+
+            # Preview option prices across a range of underlying values
+            underlying_range = [s * i / 20 for i in range(10, 31)]
+            prices = [
+                black_scholes_price(u, k, t, r, sigma, option_type)
+                for u in underlying_range
+            ]
+            chart_data = pd.DataFrame({"Underlying": underlying_range, "Price": prices})
+            chart = (
+                alt.Chart(chart_data)
+                .mark_line()
+                .encode(x="Underlying", y="Price")
+                .properties(title="Price preview")
+            )
+            st.altair_chart(chart, use_container_width=True)
         except ValueError as e:
             st.error(str(e))
 
